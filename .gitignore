@@ -1,27 +1,9 @@
-# Python cache
 __pycache__/
 *.pyc
-
-# Virtual environment
+*.pkl
 venv/
 .env
-
-# ML model files
-*.pkl
-
-# Terraform
 *.tfstate
 *.tfstate.backup
 .terraform/
-
-# Node modules
 node_modules/
-
-# VS Code
-.vscode/
-
-# Docker
-*.log
-
-# Mac/Linux system files
-.DS_Store
