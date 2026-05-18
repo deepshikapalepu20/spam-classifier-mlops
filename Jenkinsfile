@@ -17,16 +17,16 @@ pipeline {
  
         stage('Train Model') {
             steps {
-                sh 'pip install scikit-learn pandas --quiet'
-                sh 'python train_model.py'
+                sh 'pip3 install scikit-learn pandas --quiet'
+                sh 'python3 train_model.py'
             }
         }
  
         stage('Test Application') {
             steps {
-                sh 'pip install flask scikit-learn prometheus_client --quiet'
+                sh 'pip3 install flask scikit-learn prometheus_client --quiet'
                 sh '''
-                python -c "
+                python3 -c "
 import pickle
 with open('model.pkl', 'rb') as f:
     model = pickle.load(f)
