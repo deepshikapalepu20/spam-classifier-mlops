@@ -1,68 +1,52 @@
 pipeline {
     agent any
-
+ 
     environment {
         DOCKER_IMAGE = "deepshikapalepu/spam-classifier"
         DOCKER_TAG   = "v${BUILD_NUMBER}"
     }
-
+ 
     stages {
-
+ 
         stage('Checkout') {
             steps {
                 git branch: 'main',
                     url: 'https://github.com/deepshikapalepu20/spam-classifier-mlops.git'
             }
         }
-
-        stage('Install Dependencies') {
-            steps {
-                sh '''
-                    curl -sS https://bootstrap.pypa.io/get-pip.py -o get-pip.py
-                    python3 get-pip.py --user
-                    export PATH=$HOME/.local/bin:$PATH
-                    pip3 install scikit-learn pandas flask prometheus_client --quiet
-                '''
-            }
-        }
-
+ 
         stage('Train Model') {
             steps {
-                sh '''
-                    export PATH=$HOME/.local/bin:$PATH
-                    python3 train_model.py
-                '''
+                sh 'pip install scikit-learn pandas --quiet'
+                sh 'python train_model.py'
             }
         }
-
+ 
         stage('Test Application') {
             steps {
+                sh 'pip install flask scikit-learn prometheus_client --quiet'
                 sh '''
-                    export PATH=$HOME/.local/bin:$PATH
-                    python3 -c "
+                python -c "
 import pickle
 with open('model.pkl', 'rb') as f:
     model = pickle.load(f)
-
 result = model.predict(['Win free prize now!'])[0]
 assert result == 1, 'Spam detection failed!'
-
 result2 = model.predict(['Hi, how are you?'])[0]
 assert result2 == 0, 'Ham detection failed!'
-
 print('All tests passed!')
 "
                 '''
             }
         }
-
+ 
         stage('Build Docker Image') {
             steps {
                 sh "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} ."
-                sh "docker tag  ${DOCKER_IMAGE}:${DOCKER_TAG} ${DOCKER_IMAGE}:latest"
+                sh "docker tag ${DOCKER_IMAGE}:${DOCKER_TAG} ${DOCKER_IMAGE}:latest"
             }
         }
-
+ 
         stage('Push to DockerHub') {
             steps {
                 withCredentials([usernamePassword(
@@ -76,25 +60,21 @@ print('All tests passed!')
                 }
             }
         }
-
+ 
         stage('Deploy to Kubernetes') {
             steps {
                 sh "kubectl set image deployment/spam-classifier spam-classifier=${DOCKER_IMAGE}:${DOCKER_TAG}"
-                sh "kubectl rollout status deployment/spam-classifier --timeout=120s"
+                sh "kubectl rollout status deployment/spam-classifier"
             }
         }
     }
-
+ 
     post {
         success {
             echo "Pipeline SUCCESS! Image: ${DOCKER_IMAGE}:${DOCKER_TAG}"
         }
         failure {
             echo "Pipeline FAILED! Check the logs above."
-        }
-        always {
-            sh "docker logout || true"
-            cleanWs()
         }
     }
 }
