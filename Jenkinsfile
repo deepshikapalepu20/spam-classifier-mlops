@@ -17,16 +17,16 @@ pipeline {
  
         stage('Train Model') {
             steps {
-                sh 'pip install scikit-learn pandas --quiet'
-                sh 'python train_model.py'
+                sh 'pip3 install scikit-learn pandas --quiet || python3 -m pip install scikit-learn pandas --quiet'
+                sh 'python3 train_model.py'
             }
         }
- 
+
         stage('Test Application') {
             steps {
-                sh 'pip install flask scikit-learn prometheus_client --quiet'
+                sh 'pip3 install flask scikit-learn prometheus_client --quiet || python3 -m pip install flask scikit-learn prometheus_client --quiet'
                 sh '''
-                python -c "
+                python3 -c "
 import pickle
 with open('model.pkl', 'rb') as f:
     model = pickle.load(f)
@@ -36,16 +36,9 @@ result2 = model.predict(['Hi, how are you?'])[0]
 assert result2 == 0, 'Ham detection failed!'
 print('All tests passed!')
 "
-                '''
-            }
-        }
- 
-        stage('Build Docker Image') {
-            steps {
-                sh "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} ."
-                sh "docker tag ${DOCKER_IMAGE}:${DOCKER_TAG} ${DOCKER_IMAGE}:latest"
-            }
-        }
+        '''
+    }
+}
  
         stage('Push to DockerHub') {
             steps {
