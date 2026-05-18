@@ -17,14 +17,14 @@ pipeline {
  
         stage('Train Model') {
             steps {
-                sh 'pip3 install scikit-learn pandas --quiet'
+                sh 'pip3 install scikit-learn pandas --quiet --break-system-packages'
                 sh 'python3 train_model.py'
             }
         }
  
         stage('Test Application') {
             steps {
-                sh 'pip3 install flask scikit-learn prometheus_client --quiet'
+                sh 'pip3 install flask scikit-learn prometheus_client --quiet --break-system-packages'
                 sh '''
                 python3 -c "
 import pickle
