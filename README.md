@@ -233,6 +233,30 @@ The script downloads the SMS spam dataset, converts text messages into numerical
 python train_model.py
 # Output: model.pkl, ~97% accuracy on test set
 ```
+## 3. Run Model Training
+
+Run the training script to train the spam classification model and generate the saved model file.
+
+```bash
+python train_model.py
+```
+
+### Output
+
+```text
+Model trained and saved as model.pkl
+Training samples: 5572
+```
+
+### Creates
+
+```text
+model.pkl
+```
+
+### Purpose
+
+The `model.pkl` file contains the trained machine learning model. It is later loaded by the Flask API to perform spam message prediction without retraining the model every time the application starts.
 
 **Run the Flask app locally:**
 ```bash
