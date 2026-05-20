@@ -167,7 +167,7 @@ pip install flask scikit-learn pandas prometheus_client gunicorn
 
 These libraries form the foundation of the Spam Classifier MLOps project. Flask exposes the ML model through REST APIs, Scikit-learn handles model training and prediction, Pandas manages dataset processing, Prometheus Client provides monitoring metrics, and Gunicorn enables production deployment of the Flask server.
 
-## 2. train_model.py
+### 2. train_model.py
 
 ```python
 # Import Pandas for handling datasets
@@ -239,7 +239,7 @@ print(f"Training samples: {len(X)}")
 
 The script downloads the SMS spam dataset, converts text messages into numerical TF-IDF vectors, trains a Multinomial Naive Bayes model, and saves the trained model as `model.pkl` for later use in the Flask API.
 
-## 3. Run Model Training
+### 3. Run Model Training
 
 Run the training script to train the spam classification model and generate the saved model file.
 
@@ -264,7 +264,7 @@ model.pkl
 
 The `model.pkl` file contains the trained machine learning model. It is later loaded by the Flask API to perform spam message prediction without retraining the model every time the application starts.
 
-## 4. app.py (Flask API)
+### 4. app.py (Flask API)
 
 ```python
 # Import Flask framework components
@@ -429,7 +429,7 @@ if __name__ == '__main__':
 
 The Flask API loads the trained spam classification model (`model.pkl`) during startup. Users send messages to the `/predict` endpoint, where the model predicts whether the text is spam or not spam. Prometheus metrics track request counts and latency, while `/health` supports Kubernetes health checks and `/metrics` enables monitoring integration.
 
-## 5. Run the Flask App Locally
+### 5. Run the Flask App Locally
 
 Run the Flask application locally to start the spam classification API server.
 
@@ -467,7 +467,7 @@ Open the URL in your browser to access the Spam Classifier frontend interface an
 
 ---
 
-# Phase 2 — Docker Containerization
+## Phase 2 — Docker Containerization
 
 ### Benefits of Docker
 
@@ -478,7 +478,7 @@ Open the URL in your browser to access the Spam Classifier frontend interface an
 - Simplifies Kubernetes deployment
 - Reduces environment-related bugs
 
-## 1. requirements.txt
+### 1. requirements.txt
 
 Create a `requirements.txt` file to install all project dependencies.
 
@@ -507,7 +507,7 @@ pip install -r requirements.txt
 
 This installs all required packages with fixed versions to ensure the application behaves consistently across Docker containers, EC2 instances, and Kubernetes deployments.
 
-## 2. Dockerfile
+### 2. Dockerfile
 
 Create a `Dockerfile` to containerize the Flask Spam Classifier application.
 
@@ -553,13 +553,13 @@ CMD [
 ]
 ```
 
-## 3. Build and run:
+### 3. Build and run:
 ```bash
 docker build -t spam-classifier:v2 .
 docker run -d -p 5000:5000 --name spam-app spam-classifier:v2
 ```
 
-## 4. Push to Docker Hub:
+### 4. Push to Docker Hub:
 ```bash
 docker login
 docker tag spam-classifier:v2 <YOUR_DOCKERHUB_USERNAME>/spam-classifier:v2
