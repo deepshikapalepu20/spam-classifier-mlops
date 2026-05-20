@@ -156,6 +156,64 @@ pip install flask scikit-learn pandas prometheus_client gunicorn
 
 These libraries form the foundation of the Spam Classifier MLOps project. Flask exposes the ML model through REST APIs, Scikit-learn handles model training and prediction, Pandas manages dataset processing, Prometheus Client provides monitoring metrics, and Gunicorn enables production deployment of the Flask server.
 
+## 2. train_model.py
+
+```python
+import pandas as pd
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.pipeline import Pipeline
+import pickle, urllib.request
+
+# Download the SMS Spam dataset
+url = "https://raw.githubusercontent.com/justmarkham/pycon-2016-tutorial/master/data/sms.tsv"
+df = pd.read_csv(
+    url,
+    sep='\t',
+    header=None,
+    names=['label', 'message']
+)
+
+X = df['message']
+y = df['label'].map({'ham': 0, 'spam': 1})
+
+# Build pipeline: TF-IDF + Naive Bayes
+model = Pipeline([
+    ('tfidf', TfidfVectorizer(stop_words='english')),
+    ('clf', MultinomialNB()),
+])
+
+model.fit(X, y)
+
+# Save trained model
+with open('model.pkl', 'wb') as f:
+    pickle.dump(model, f)
+
+print("Model trained and saved as model.pkl")
+print(f"Training samples: {len(X)}")
+```
+
+### Explanation
+
+| Code Component | Purpose |
+|----------------|---------|
+| `import pandas as pd` | Imports Pandas for dataset loading and processing |
+| `TfidfVectorizer` | Converts text messages into numerical TF-IDF feature vectors |
+| `MultinomialNB` | Naive Bayes algorithm used for spam classification |
+| `Pipeline` | Combines preprocessing and classification into a single workflow |
+| `pickle` | Saves the trained machine learning model to disk |
+| `pd.read_csv()` | Downloads and loads the SMS dataset |
+| `X = df['message']` | Extracts message text as input features |
+| `y = df['label'].map()` | Converts labels into binary values (ham = 0, spam = 1) |
+| `Pipeline([...])` | Creates a processing pipeline with TF-IDF and Naive Bayes |
+| `model.fit(X, y)` | Trains the machine learning model |
+| `pickle.dump()` | Stores the trained model in `model.pkl` |
+| `print()` | Displays training completion status and dataset size |
+
+### Workflow
+
+The training script downloads the SMS Spam dataset, converts text into numerical features using TF-IDF vectorization, trains a Multinomial Naive Bayes classifier, and stores the trained model as `model.pkl`. This saved model is later loaded by the Flask API to perform spam prediction on incoming messages.
+
 **Train the model:**
 ```bash
 python train_model.py
