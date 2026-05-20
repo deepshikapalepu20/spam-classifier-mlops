@@ -429,12 +429,29 @@ if __name__ == '__main__':
 
 The Flask API loads the trained spam classification model (`model.pkl`) during startup. Users send messages to the `/predict` endpoint, where the model predicts whether the text is spam or not spam. Prometheus metrics track request counts and latency, while `/health` supports Kubernetes health checks and `/metrics` enables monitoring integration.
 
-##5 Run the Flask app locally:
+## 5. Run the Flask App Locally
+
+Run the Flask application locally to start the spam classification API server.
+
 ```bash
+# Start the Flask application
 python app.py
-# Accessible at http://127.0.0.1:5000
+
+# Application becomes accessible locally
+# Default Flask URL
+# Open this in browser
+http://127.0.0.1:5000
 ```
 
+### Expected Result
+
+After running the command, Flask starts the web server and loads the trained machine learning model. The application becomes available on:
+
+```text
+http://127.0.0.1:5000
+```
+
+Open the URL in your browser to access the Spam Classifier frontend interface and test spam predictions.
 **Flask API Endpoints:**
 
 | Endpoint | Method | Description |
@@ -450,9 +467,47 @@ python app.py
 
 ---
 
-### Phase 2 — Docker Containerization
+# Phase 2 — Docker Containerization
 
-```dockerfile
+## Why Docker?
+
+Docker packages the application along with the Python version, dependencies, and model files into a container so the application behaves consistently across different environments.
+
+### Problem Solved
+
+```text
+Works on Laptop
+      ↓
+Works on Docker
+      ↓
+Works on EC2
+      ↓
+Works on Kubernetes
+```
+
+This eliminates the common issue of:
+
+> "It works on my machine, but not on another system."
+
+### Without Docker
+
+```text
+❌ Runs locally only
+❌ Fails on another machine
+❌ Dependency version mismatch
+❌ Environment configuration issues
+```
+
+### Benefits of Docker
+
+- Consistent runtime environment
+- Easy deployment across platforms
+- Dependency isolation
+- Improved portability
+- Simplifies Kubernetes deployment
+- Reduces environment-related bugs
+
+```Dockerfile
 FROM python:3.11-slim
 WORKDIR /app
 COPY requirements.txt .
