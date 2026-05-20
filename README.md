@@ -469,35 +469,6 @@ Open the URL in your browser to access the Spam Classifier frontend interface an
 
 # Phase 2 — Docker Containerization
 
-## Why Docker?
-
-Docker packages the application along with the Python version, dependencies, and model files into a container so the application behaves consistently across different environments.
-
-### Problem Solved
-
-```text
-Works on Laptop
-      ↓
-Works on Docker
-      ↓
-Works on EC2
-      ↓
-Works on Kubernetes
-```
-
-This eliminates the common issue of:
-
-> "It works on my machine, but not on another system."
-
-### Without Docker
-
-```text
-❌ Runs locally only
-❌ Fails on another machine
-❌ Dependency version mismatch
-❌ Environment configuration issues
-```
-
 ### Benefits of Docker
 
 - Consistent runtime environment
@@ -507,24 +478,88 @@ This eliminates the common issue of:
 - Simplifies Kubernetes deployment
 - Reduces environment-related bugs
 
-```Dockerfile
-FROM python:3.11-slim
-WORKDIR /app
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-COPY app.py .
-COPY model.pkl .
-COPY templates/ ./templates/
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "app:app"]
+## 1. requirements.txt
+
+Create a `requirements.txt` file to install all project dependencies.
+
+```txt
+# Flask framework for building REST API endpoints
+flask==3.0.0
+
+# Machine learning library for training and prediction
+scikit-learn==1.4.0
+
+# Data processing and dataset handling
+pandas==2.2.0
+
+# Prometheus monitoring and metrics collection
+prometheus_client==0.20.0
+
+# Production-grade server for running Flask application
+gunicorn==21.2.0
 ```
 
-**Build and run:**
+### Install Dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+This installs all required packages with fixed versions to ensure the application behaves consistently across Docker containers, EC2 instances, and Kubernetes deployments.
+
+## 2. Dockerfile
+
+Create a `Dockerfile` to containerize the Flask Spam Classifier application.
+
+```dockerfile
+# Use lightweight Python 3.11 image as base container
+FROM python:3.11-slim
+
+# Set working directory inside container
+# All commands run from /app folder
+WORKDIR /app
+
+# Copy dependency file into container
+COPY requirements.txt .
+
+# Install Python packages
+# --no-cache-dir reduces image size
+RUN pip install --no-cache-dir \
+-r requirements.txt
+
+# Copy Flask application file
+COPY app.py .
+
+# Copy trained ML model file
+COPY model.pkl .
+
+# Copy frontend HTML templates
+COPY templates/ ./templates/
+
+# Open container port 5000
+# Flask/Gunicorn runs on this port
+EXPOSE 5000
+
+# Start application using Gunicorn
+# --bind connects app to port 5000
+# app:app means
+# first "app" -> app.py file
+# second "app" -> Flask object name
+CMD [
+"gunicorn",
+"--bind",
+"0.0.0.0:5000",
+"app:app"
+]
+```
+
+## 3. Build and run:
 ```bash
 docker build -t spam-classifier:v2 .
 docker run -d -p 5000:5000 --name spam-app spam-classifier:v2
 ```
 
-**Push to Docker Hub:**
+## 4. Push to Docker Hub:
 ```bash
 docker login
 docker tag spam-classifier:v2 <YOUR_DOCKERHUB_USERNAME>/spam-classifier:v2
