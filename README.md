@@ -253,7 +253,172 @@ model.pkl
 
 The `model.pkl` file contains the trained machine learning model. It is later loaded by the Flask API to perform spam message prediction without retraining the model every time the application starts.
 
-**Run the Flask app locally:**
+## 4. app.py (Flask API)
+
+```python
+# Import Flask framework components
+# Flask -> creates web application
+# request -> receives incoming API requests
+# jsonify -> converts Python data into JSON response
+# render_template -> loads HTML frontend pages
+from flask import Flask, request, jsonify, render_template
+
+# Import Prometheus monitoring tools
+# Counter -> counts API requests
+# Histogram -> measures response time
+# generate_latest -> generates metrics output
+# CONTENT_TYPE_LATEST -> sets Prometheus content type
+from prometheus_client import (
+    Counter,
+    Histogram,
+    generate_latest,
+    CONTENT_TYPE_LATEST
+)
+
+# pickle loads saved ML model
+# time measures API execution time
+import pickle, time
+
+# Create Flask application instance
+app = Flask(__name__)
+
+# Load trained machine learning model
+# 'rb' means read binary mode
+with open('model.pkl', 'rb') as f:
+
+    # Load model from file
+    model = pickle.load(f)
+
+# Create Prometheus counter metric
+# Tracks total prediction requests
+REQUEST_COUNT = Counter(
+
+    # Metric name
+    'spam_prediction_requests_total',
+
+    # Metric description
+    'Total prediction requests',
+
+    # Label category
+    ['result']
+)
+
+# Create histogram metric
+# Measures prediction execution time
+REQUEST_LATENCY = Histogram(
+
+    # Metric name
+    'spam_prediction_latency_seconds',
+
+    # Metric description
+    'Prediction latency in seconds'
+)
+
+# Homepage route
+# Runs when user visits "/"
+@app.route('/')
+def home():
+
+    # Load frontend page
+    return render_template('index.html')
+
+# Health check endpoint
+# Used by Kubernetes to verify app health
+@app.route('/health')
+def health():
+
+    # Return healthy status
+    return jsonify({
+        "status": "healthy"
+    })
+
+# Prediction API endpoint
+# Accepts POST requests
+@app.route('/predict', methods=['POST'])
+def predict():
+
+    # Start timer
+    start = time.time()
+
+    # Read incoming JSON request
+    data = request.get_json()
+
+    # Validate input
+    if not data or 'message' not in data:
+
+        # Return error if message missing
+        return jsonify({
+            "error":
+            "Provide JSON with 'message' field"
+        }), 400
+
+    # Extract message text
+    msg = data['message']
+
+    # Predict spam or not spam
+    pred = model.predict([msg])[0]
+
+    # Get confidence probabilities
+    prob = model.predict_proba([msg])[0]
+
+    # Convert prediction number into label
+    result = "SPAM" if pred == 1 else "NOT SPAM"
+
+    # Increment request counter
+    REQUEST_COUNT.labels(
+        result=result
+    ).inc()
+
+    # Record execution latency
+    REQUEST_LATENCY.observe(
+        time.time() - start
+    )
+
+    # Return API response
+    return jsonify({
+
+        # Original message
+        "message": msg,
+
+        # Prediction result
+        "prediction": result,
+
+        # Confidence percentage
+        "confidence":
+        round(float(max(prob)) * 100, 2)
+
+    })
+
+# Metrics endpoint
+# Prometheus scrapes metrics from here
+@app.route('/metrics')
+def metrics():
+
+    # Return monitoring metrics
+    return generate_latest(), 200, {
+        'Content-Type':
+        CONTENT_TYPE_LATEST
+    }
+
+# Run application
+if __name__ == '__main__':
+
+    # Start Flask server
+    # host='0.0.0.0' allows external access
+    # port=5000 defines application port
+    # debug=False disables debug mode
+    app.run(
+        host='0.0.0.0',
+        port=5000,
+        debug=False
+    )
+```
+
+### Workflow
+
+The Flask API loads the trained spam classification model (`model.pkl`) during startup. Users send messages to the `/predict` endpoint, where the model predicts whether the text is spam or not spam. Prometheus metrics track request counts and latency, while `/health` supports Kubernetes health checks and `/metrics` enables monitoring integration.
+
+##5 Run the Flask app locally:
 ```bash
 python app.py
 # Accessible at http://127.0.0.1:5000
