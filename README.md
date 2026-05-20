@@ -136,6 +136,26 @@ spam-classifier-mlops/
 
 The spam classifier uses a **Scikit-learn Pipeline** combining TF-IDF vectorization with a Multinomial Naive Bayes classifier, trained on the [SMS Spam Collection dataset](https://archive.ics.uci.edu/ml/datasets/SMS+Spam+Collection) (5,574 messages).
 
+### 1. Install Dependencies
+
+```bash
+pip install flask scikit-learn pandas prometheus_client gunicorn
+```
+
+### Explanation
+
+| Command | Purpose |
+|----------|-----------|
+| `flask` | Creates REST API endpoints for serving the spam classification model |
+| `scikit-learn` | Builds and trains the spam classification machine learning model |
+| `pandas` | Loads, cleans, and processes the dataset |
+| `prometheus_client` | Generates monitoring metrics for application performance tracking |
+| `gunicorn` | Production-grade WSGI server for deploying the Flask application |
+
+### Dependency Overview
+
+These libraries form the foundation of the Spam Classifier MLOps project. Flask exposes the ML model through REST APIs, Scikit-learn handles model training and prediction, Pandas manages dataset processing, Prometheus Client provides monitoring metrics, and Gunicorn enables production deployment of the Flask server.
+
 **Train the model:**
 ```bash
 python train_model.py
