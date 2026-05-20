@@ -121,10 +121,11 @@ spam-classifier-mlops/
 │   ├── main.tf                ← AWS EC2 and Security Group
 │   ├── variables.tf           ← Input variables
 │   └── outputs.tf             ← Output values (public IP, URL)
-├── prometheus/
-│   └── prometheus.yml         ← Prometheus scrape config
+|
 └── monitoring/
     └── docker-compose.yml     ← Prometheus + Grafana stack
+    └── prometheus
+        └── prometheus.yml         ← Prometheus scrape config
 ```
 
 ---
