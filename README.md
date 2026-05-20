@@ -51,22 +51,33 @@ The SpamShield frontend allows users to:
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│                    MLOps Pipeline                        │
-│                                                         │
-│  ML Model ──► Flask API ──► Docker Image                │
-│                                  │                      │
-│                           Docker Hub                    │
-│                          ┌───────┴────────┐             │
-│                     Kubernetes        Jenkins CI/CD     │
-│                    (Minikube)        (Webhook Trigger)  │
-│                          │                │             │
-│                    AWS EC2 ◄──── Terraform (IaC)        │
-│                          │                              │
-│              AWS Elastic Beanstalk                      │
-│                          │                              │
-│           Prometheus + Grafana (Monitoring)             │
-└─────────────────────────────────────────────────────────┘
+┌────────────────────────────────────────────────────────────┐
+│                     SpamShield MLOps Pipeline              │
+│                                                            │
+│ ML Model                                                   │
+│ (Naive Bayes + TF-IDF)                                     │
+│       │                                                    │
+│       ▼                                                    │
+│ Flask API + Frontend                                       │
+│       │                                                    │
+│       ▼                                                    │
+│ Docker Image                                               │
+│       │                                                    │
+│       ▼                                                    │
+│ Docker Hub                                                 │
+│       │                                                    │
+│ ┌──────────────┬──────────────┬────────────────┐           │
+│ ▼              ▼              ▼                ▼           │
+│ Docker      Kubernetes       AWS EC2      Elastic          │
+│ Local       (Minikube)       (Docker      Beanstalk        │
+│ Deploy       Deploy)         Image Pull)  (ZIP Upload)    │
+│                                                      │     │
+│ Jenkins Container                                    │     │
+│ (GitHub Webhook Trigger Only)                        │     │
+│                                                      │     │
+│ Prometheus + Grafana                                 │     │
+│ (Monitoring Docker Deployment Only)                  │     │
+└────────────────────────────────────────────────────────────┘
 ```
 
 | Layer | Component | Access |
