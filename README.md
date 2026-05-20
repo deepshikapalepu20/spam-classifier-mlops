@@ -228,11 +228,6 @@ print(f"Training samples: {len(X)}")
 
 The script downloads the SMS spam dataset, converts text messages into numerical TF-IDF vectors, trains a Multinomial Naive Bayes model, and saves the trained model as `model.pkl` for later use in the Flask API.
 
-**Train the model:**
-```bash
-python train_model.py
-# Output: model.pkl, ~97% accuracy on test set
-```
 ## 3. Run Model Training
 
 Run the training script to train the spam classification model and generate the saved model file.
