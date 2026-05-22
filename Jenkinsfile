@@ -60,13 +60,6 @@ print('All tests passed!')
                 }
             }
         }
- 
-        //stage('Deploy to Kubernetes') {
-            //steps {
-                //sh "kubectl set image deployment/spam-classifier spam-classifier=${DOCKER_IMAGE}:${DOCKER_TAG}"
-                //sh "kubectl rollout status deployment/spam-classifier"
-           // }
-       // }
     }
  
     post {

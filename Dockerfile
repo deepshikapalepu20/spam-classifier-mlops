@@ -1,13 +1,7 @@
-# Use lightweight Python base
 FROM python:3.11-slim
-
 WORKDIR /app
-
-# Install dependencies first (Docker layer cache optimization)
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
-
-# Copy app code, model, and frontend template
 COPY app.py .
 COPY model.pkl .
 COPY templates/ ./templates/
