@@ -1,7 +1,8 @@
 from flask import Flask, request, jsonify, render_template
 from prometheus_client import Counter, Histogram, generate_latest, CONTENT_TYPE_LATEST
 import pickle, time
-
+# Demo change
+print("Workflow demonstration")
 app = Flask(__name__)
 
 # ── Load model ────────────────────────────────────────────────────────────────
