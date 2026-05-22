@@ -1,15 +1,9 @@
 from flask import Flask, request, jsonify, render_template
 from prometheus_client import Counter, Histogram, generate_latest, CONTENT_TYPE_LATEST
 import pickle, time
-# Demo change
-print("Workflow demonstration")
 app = Flask(__name__)
-
-# ── Load model ────────────────────────────────────────────────────────────────
 with open('model.pkl', 'rb') as f:
     model = pickle.load(f)
-
-# ── Prometheus metrics ────────────────────────────────────────────────────────
 REQUEST_COUNT = Counter(
     'spam_prediction_requests_total',
     'Total prediction requests',
@@ -19,8 +13,6 @@ REQUEST_LATENCY = Histogram(
     'spam_prediction_latency_seconds',
     'Prediction latency in seconds'
 )
-
-# ── Routes ────────────────────────────────────────────────────────────────────
 
 @app.route('/')
 def home():
