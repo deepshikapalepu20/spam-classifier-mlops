@@ -110,26 +110,6 @@ systemctl start docker
 systemctl enable docker
 
 usermod -aG docker ubuntu
-
-# Install Docker Compose
-
-curl -L \
-"https://github.com/docker/compose/releases/download/v2.24.6/docker-compose-linux-x86_64" \
--o /usr/local/bin/docker-compose
-
-chmod +x /usr/local/bin/docker-compose
-
-# Pull your Docker image
-
-docker pull YOUR_DOCKERHUB_USERNAME/spam-classifier:latest
-
-# Run container
-
-docker run -d \
--p 5000:5000 \
---name spam-classifier \
-YOUR_DOCKERHUB_USERNAME/spam-classifier:latest
-
 EOF
 
   tags = {
