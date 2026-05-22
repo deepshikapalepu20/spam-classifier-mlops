@@ -12,7 +12,7 @@ provider "aws" {
   profile = "default"
 }
 
-# Fetch latest Ubuntu 22.04 AMI dynamically
+# Ubuntu AMI
 data "aws_ami" "ubuntu" {
   most_recent = true
   owners      = ["099720109477"]
@@ -23,16 +23,19 @@ data "aws_ami" "ubuntu" {
   }
 }
 
-# Fetch default VPC dynamically
+# Default VPC
 data "aws_vpc" "default" {
   default = true
 }
 
-# Security group
-resource "aws_security_group" "jenkins_sg" {
-  name        = "jenkins-security-group"
-  description = "Allow SSH, Jenkins and Flask ports"
+# Security Group
+resource "aws_security_group" "spam_classifier_sg" {
+
+  name        = "spam-classifier-sg"
+  description = "Allow SSH and Flask App"
   vpc_id      = data.aws_vpc.default.id
+
+  # SSH
 
   ingress {
     from_port   = 22
@@ -41,12 +44,7 @@ resource "aws_security_group" "jenkins_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  ingress {
-    from_port   = 9090
-    to_port     = 9090
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
+  # Flask Application
 
   ingress {
     from_port   = 5000
@@ -55,43 +53,90 @@ resource "aws_security_group" "jenkins_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  # Optional Prometheus
+
+  ingress {
+    from_port   = 9090
+    to_port     = 9090
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  # Optional Grafana
+
+  ingress {
+    from_port   = 3000
+    to_port     = 3000
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
   egress {
+
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
+
   }
 
   tags = {
-    Name = "jenkins-security-group"
+    Name = "SpamClassifier-SG"
   }
+
 }
 
-# EC2 Instance
-resource "aws_instance" "jenkins_server" {
+# EC2 Deployment Server
+
+resource "aws_instance" "deployment_server" {
+
   ami                    = data.aws_ami.ubuntu.id
   instance_type          = var.instance_type
-  vpc_security_group_ids = [aws_security_group.jenkins_sg.id]
+
+  vpc_security_group_ids = [
+    aws_security_group.spam_classifier_sg.id
+  ]
 
   user_data = <<-EOF
-    #!/bin/bash
-    apt-get update -y
-    apt-get install -y docker.io openjdk-17-jdk
-    systemctl start docker
-    systemctl enable docker
-    usermod -aG docker ubuntu
+#!/bin/bash
 
-    # Install Jenkins
-    curl -fsSL https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key | tee /usr/share/keyrings/jenkins-keyring.asc
-    echo deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian-stable binary/ | tee /etc/apt/sources.list.d/jenkins.list
-    apt-get update -y
-    apt-get install -y jenkins
-    systemctl start jenkins
-    systemctl enable jenkins
-  EOF
+apt-get update -y
+
+# Install Docker
+
+apt-get install -y docker.io
+
+systemctl start docker
+systemctl enable docker
+
+usermod -aG docker ubuntu
+
+# Install Docker Compose
+
+curl -L \
+"https://github.com/docker/compose/releases/download/v2.24.6/docker-compose-linux-x86_64" \
+-o /usr/local/bin/docker-compose
+
+chmod +x /usr/local/bin/docker-compose
+
+# Pull your Docker image
+
+docker pull YOUR_DOCKERHUB_USERNAME/spam-classifier:latest
+
+# Run container
+
+docker run -d \
+-p 5000:5000 \
+--name spam-classifier \
+YOUR_DOCKERHUB_USERNAME/spam-classifier:latest
+
+EOF
 
   tags = {
-    Name    = "Jenkins-Server"
+
+    Name = "SpamClassifier-Deployment-Server"
     Project = "SpamClassifier"
+
   }
+
 }
